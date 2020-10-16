@@ -5,11 +5,12 @@
 package xlsx
 
 import (
+	"testing"
+
 	"github.com/plandem/xlsx/format/styles"
 	"github.com/plandem/xlsx/internal/ml"
 	"github.com/plandem/xlsx/types"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestToRichFont(t *testing.T) {
@@ -18,7 +19,7 @@ func TestToRichFont(t *testing.T) {
 		styles.Font.Color("#FF1122"),
 	)
 
-	font := toRichFont(style)
+	font := styles.UnpackRichFont(style)
 	require.IsType(t, &ml.RichFont{}, font)
 
 	require.Equal(t, &ml.RichFont{

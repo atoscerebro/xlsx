@@ -6,14 +6,15 @@ package hyperlink
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
+
 	sharedML "github.com/plandem/ooxml/ml"
 	"github.com/plandem/xlsx/format/styles"
 	"github.com/plandem/xlsx/internal"
 	"github.com/plandem/xlsx/internal/ml"
 	"github.com/plandem/xlsx/internal/validator"
 	"github.com/plandem/xlsx/types"
-	"regexp"
-	"strings"
 )
 
 //Info hold advanced settings of hyperlink
@@ -285,8 +286,7 @@ func ToTarget(target string) Option {
 	}
 }
 
-//private method used by hyperlinks manager to unpack Info
-func from(info *Info) (hyperlink *ml.Hyperlink, format interface{}, err error) {
+func (info *Info) Unpack() (hyperlink *ml.Hyperlink, format interface{}, err error) {
 	if err = info.Validate(); err != nil {
 		return
 	}
@@ -296,8 +296,7 @@ func from(info *Info) (hyperlink *ml.Hyperlink, format interface{}, err error) {
 	return
 }
 
-//private method used by hyperlinks manager to pack Info
-func to(link *ml.Hyperlink, target string, styleID styles.DirectStyleID) *Info {
+func Pack(link *ml.Hyperlink, target string, styleID styles.DirectStyleID) *Info {
 	//normalize location
 	location := link.Location
 	if len(location) > 0 && location[0] != '#' {

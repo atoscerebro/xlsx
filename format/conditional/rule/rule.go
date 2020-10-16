@@ -50,7 +50,6 @@ func (r *Info) Validate() error {
 	return nil
 }
 
-//private method used to access private fields that we want to protect from direct mutating
-func fromRule(r *Info) (*ml.ConditionalRule, *styles.Info) {
+func (r *Info) Unpack() (*ml.ConditionalRule, *styles.Info) {
 	return r.rule, r.style
 }

@@ -6,11 +6,12 @@ package styles
 
 import (
 	"encoding/xml"
+	"testing"
+
 	"github.com/plandem/xlsx/internal/color"
 	"github.com/plandem/xlsx/internal/ml"
 	"github.com/plandem/xlsx/internal/ml/primitives"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func createStylesAndFill(callback func(*Info)) *Info {
@@ -23,7 +24,7 @@ func TestStyleFormat_Settings(t *testing.T) {
 	style := New()
 
 	//empty
-	font, fill, alignment, number, protection, border, namedInfo := from(style)
+	font, fill, alignment, number, protection, border, namedInfo := style.Unpack()
 	require.Nil(t, font)
 	require.Nil(t, fill)
 	require.Nil(t, alignment)
@@ -72,7 +73,7 @@ func TestStyleFormat_Settings(t *testing.T) {
 		Protection.Locked,
 	)
 
-	font, fill, alignment, number, protection, border, namedInfo = from(style)
+	font, fill, alignment, number, protection, border, namedInfo = style.Unpack()
 	require.NotNil(t, font)
 	require.NotNil(t, fill)
 	require.NotNil(t, alignment)
@@ -172,7 +173,7 @@ func TestStyleFormat_Settings_Alignment(t *testing.T) {
 		Alignment.ReadingOrder(4),
 	)
 
-	font, fill, alignment, number, protection, border, namedInfo := from(style)
+	font, fill, alignment, number, protection, border, namedInfo := style.Unpack()
 	require.Nil(t, font)
 	require.Nil(t, fill)
 	require.NotNil(t, alignment)
@@ -206,7 +207,7 @@ func TestStyleFormat_Settings_Border(t *testing.T) {
 		Border.Horizontal.Color("#FF00FF"),
 	)
 
-	font, fill, alignment, number, protection, border, namedInfo := from(style)
+	font, fill, alignment, number, protection, border, namedInfo := style.Unpack()
 	require.Nil(t, font)
 	require.Nil(t, fill)
 	require.Nil(t, alignment)
@@ -254,7 +255,7 @@ func TestStyleFormat_Settings_Fill(t *testing.T) {
 		Fill.Background("#00FF00"),
 		Fill.Type(PatternTypeDarkDown),
 	)
-	font, fill, alignment, number, protection, border, namedInfo := from(style)
+	font, fill, alignment, number, protection, border, namedInfo := style.Unpack()
 	require.Nil(t, font)
 	require.NotNil(t, fill)
 	require.Nil(t, alignment)
@@ -282,7 +283,7 @@ func TestStyleFormat_Settings_Fill(t *testing.T) {
 		Fill.Gradient.Stop(100, "#FF00FF"),
 		Fill.Gradient.Stop(200, "#00FF00"),
 	)
-	font, fill, alignment, number, protection, border, namedInfo = from(style)
+	font, fill, alignment, number, protection, border, namedInfo = style.Unpack()
 	require.Nil(t, font)
 	require.NotNil(t, fill)
 	require.Nil(t, alignment)
@@ -325,7 +326,7 @@ func TestStyleFormat_Settings_Font(t *testing.T) {
 		Font.Scheme(FontSchemeMinor),
 	)
 
-	font, fill, alignment, number, protection, border, namedInfo := from(style)
+	font, fill, alignment, number, protection, border, namedInfo := style.Unpack()
 	require.NotNil(t, font)
 	require.Nil(t, fill)
 	require.Nil(t, alignment)
@@ -355,7 +356,7 @@ func TestStyleFormat_Settings_Number(t *testing.T) {
 	style := New(
 		NumberFormatID(8),
 	)
-	font, fill, alignment, number, protection, border, namedInfo := from(style)
+	font, fill, alignment, number, protection, border, namedInfo := style.Unpack()
 	require.Nil(t, font)
 	require.Nil(t, fill)
 	require.Nil(t, alignment)
@@ -375,7 +376,7 @@ func TestStyleFormat_Settings_Protection(t *testing.T) {
 		Protection.Hidden,
 		Protection.Locked,
 	)
-	font, fill, alignment, number, protection, border, namedInfo := from(style)
+	font, fill, alignment, number, protection, border, namedInfo := style.Unpack()
 	require.Nil(t, font)
 	require.Nil(t, fill)
 	require.Nil(t, alignment)
@@ -392,22 +393,22 @@ func TestStyleFormat_Settings_Protection(t *testing.T) {
 
 func TestFontMarshal(t *testing.T) {
 	//0 must be omitted
-	font, _, _, _, _, _, _ := from(New(
+	font, _, _, _, _, _, _ := New(
 		Font.Size(0),
 		Font.Family(0),
 		Font.Charset(0),
-	))
+	).Unpack()
 	require.Nil(t, font)
 
 	//simple version
-	font, _, _, _, _, _, _ = from(New(
+	font, _, _, _, _, _, _ = New(
 		Font.Name("Calibri"),
-	))
+	).Unpack()
 	encoded, _ := xml.Marshal(font)
 	require.Equal(t, `<Font><name val="Calibri"></name></Font>`, string(encoded))
 
 	//full version
-	font, _, _, _, _, _, _ = from(New(
+	font, _, _, _, _, _, _ = New(
 		Font.Name("Calibri"),
 		Font.Size(10),
 		Font.Bold,
@@ -421,7 +422,7 @@ func TestFontMarshal(t *testing.T) {
 		Font.Underline(UnderlineTypeSingle),
 		Font.Superscript,
 		Font.Scheme(FontSchemeMinor),
-	))
+	).Unpack()
 
 	encoded, _ = xml.Marshal(font)
 	require.Equal(t, `<Font><name val="Calibri"></name><family val="5"></family><b val="true"></b><i val="true"></i><strike val="true"></strike><shadow val="true"></shadow><condense val="true"></condense><extend val="true"></extend><color indexed="6"></color><sz val="10"></sz><u val="single"></u><vertAlign val="superscript"></vertAlign><scheme val="minor"></scheme></Font>`, string(encoded))
@@ -429,20 +430,20 @@ func TestFontMarshal(t *testing.T) {
 
 func TestFillMarshal(t *testing.T) {
 	//0 must be omitted
-	_, fill, _, _, _, _, _ := from(New())
+	_, fill, _, _, _, _, _ := New().Unpack()
 	require.Nil(t, fill)
 
 	//pattern version
-	_, fill, _, _, _, _, _ = from(New(
+	_, fill, _, _, _, _, _ = New(
 		Fill.Color("#FF00FF"),
 		Fill.Background("#00FF00"),
 		Fill.Type(PatternTypeDarkDown),
-	))
+	).Unpack()
 	encoded, _ := xml.Marshal(fill)
 	require.Equal(t, `<Fill><patternFill patternType="darkDown"><fgColor indexed="6"></fgColor><bgColor indexed="3"></bgColor></patternFill></Fill>`, string(encoded))
 
 	//gradient version
-	_, fill, _, _, _, _, _ = from(New(
+	_, fill, _, _, _, _, _ = New(
 		Fill.Gradient.Degree(90),
 		Fill.Gradient.Type(GradientTypePath),
 		Fill.Gradient.Left(1),
@@ -451,25 +452,25 @@ func TestFillMarshal(t *testing.T) {
 		Fill.Gradient.Bottom(4),
 		Fill.Gradient.Stop(100, "#FF00FF"),
 		Fill.Gradient.Stop(200, "#00FF00"),
-	))
+	).Unpack()
 	encoded, _ = xml.Marshal(fill)
 	require.Equal(t, `<Fill><gradientFill degree="90" left="1" right="2" top="3" bottom="4" type="path"><stop position="100"><color indexed="6"></color></stop><stop position="200"><color indexed="3"></color></stop></gradientFill></Fill>`, string(encoded))
 }
 
 func TestBorderMarshal(t *testing.T) {
 	//0 must be omitted
-	_, _, _, _, _, border, _ := from(New())
+	_, _, _, _, _, border, _ := New().Unpack()
 	require.Nil(t, border)
 
 	//simple version
-	_, _, _, _, _, border, _ = from(New(
+	_, _, _, _, _, border, _ = New(
 		Border.Outline,
-	))
+	).Unpack()
 	encoded, _ := xml.Marshal(border)
 	require.Equal(t, `<Border outline="true"></Border>`, string(encoded))
 
 	//full version
-	_, _, _, _, _, border, _ = from(New(
+	_, _, _, _, _, border, _ = New(
 		Border.Outline,
 		Border.DiagonalUp,
 		Border.DiagonalDown,
@@ -487,7 +488,7 @@ func TestBorderMarshal(t *testing.T) {
 		Border.Vertical.Color("#FF00FF"),
 		Border.Horizontal.Type(BorderStyleDashDot),
 		Border.Horizontal.Color("#FF00FF"),
-	))
+	).Unpack()
 	encoded, _ = xml.Marshal(border)
 	require.Equal(t, `<Border diagonalUp="true" diagonalDown="true" outline="true"><left style="dashDot"><color indexed="6"></color></left><right style="dashDot"><color indexed="6"></color></right><top style="dashDot"><color indexed="6"></color></top><bottom style="dashDot"><color indexed="6"></color></bottom><diagonal style="dashDot"><color indexed="6"></color></diagonal><vertical style="dashDot"><color indexed="6"></color></vertical><horizontal style="dashDot"><color indexed="6"></color></horizontal></Border>`, string(encoded))
 }

@@ -7,22 +7,14 @@ package xlsx
 import (
 	"errors"
 	"fmt"
+
 	sharedML "github.com/plandem/ooxml/ml"
 	"github.com/plandem/xlsx/format/styles"
 	"github.com/plandem/xlsx/internal"
 	"github.com/plandem/xlsx/internal/ml"
 	"github.com/plandem/xlsx/types"
 	"github.com/plandem/xlsx/types/hyperlink"
-
-	// to link unexported
-	_ "unsafe"
 )
-
-//go:linkname fromHyperlinkInfo github.com/plandem/xlsx/types/hyperlink.from
-func fromHyperlinkInfo(info *hyperlink.Info) (hyperlink *ml.Hyperlink, format interface{}, err error)
-
-//go:linkname toHyperlinkInfo github.com/plandem/xlsx/types/hyperlink.to
-func toHyperlinkInfo(hyperlink *ml.Hyperlink, targetInfo string, styleID styles.DirectStyleID) *hyperlink.Info
 
 type hyperlinks struct {
 	sheet          *sheetInfo
@@ -72,7 +64,7 @@ func (h *hyperlinks) Add(bounds types.Bounds, link interface{}) (interface{}, er
 	}
 
 	//prepare hyperlink info
-	hLink, format, err := fromHyperlinkInfo(object)
+	hLink, format, err := object.Unpack()
 	if err != nil {
 		return styles.DefaultDirectStyle, err
 	}
@@ -124,7 +116,7 @@ func (h *hyperlinks) Get(ref types.CellRef) *hyperlink.Info {
 			if link.Bounds.Contains(cIdx, rIdx) {
 				cell := h.sheet.sheet.CellByRef(ref)
 				styleID := cell.ml.Style
-				return toHyperlinkInfo(link, h.sheet.relationships.GetTargetById(string(link.RID)), styleID)
+				return hyperlink.Pack(link, h.sheet.relationships.GetTargetById(string(link.RID)), styleID)
 			}
 		}
 	}

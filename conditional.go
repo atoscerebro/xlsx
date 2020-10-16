@@ -5,18 +5,12 @@
 package xlsx
 
 import (
-	"github.com/plandem/xlsx/format/conditional"
-	"github.com/plandem/xlsx/format/styles"
-	"github.com/plandem/xlsx/internal/ml"
-	"github.com/plandem/xlsx/types"
 	"strings"
 
-	// to link unexported
-	_ "unsafe"
+	"github.com/plandem/xlsx/format/conditional"
+	"github.com/plandem/xlsx/internal/ml"
+	"github.com/plandem/xlsx/types"
 )
-
-//go:linkname fromConditionalFormat github.com/plandem/xlsx/format/conditional.from
-func fromConditionalFormat(f *conditional.Info) (*ml.ConditionalFormatting, []*styles.Info)
 
 type conditionals struct {
 	sheet *sheetInfo
@@ -48,7 +42,7 @@ func (c *conditionals) Add(ci *conditional.Info, refs []types.Ref) error {
 		return err
 	}
 
-	info, formats := fromConditionalFormat(ci)
+	info, formats := ci.Unpack()
 	if info != nil {
 		var startCol, startRow int
 

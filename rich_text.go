@@ -6,18 +6,13 @@ package xlsx
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/plandem/xlsx/format/styles"
 	"github.com/plandem/xlsx/internal"
 	"github.com/plandem/xlsx/internal/ml"
 	"github.com/plandem/xlsx/internal/ml/primitives"
-	"reflect"
-
-	// to link unexported
-	_ "unsafe"
 )
-
-//go:linkname toRichFont github.com/plandem/xlsx/format/styles.toRichFont
-func toRichFont(f *styles.Info) *ml.RichFont
 
 //nolint
 func toRichText(parts ...interface{}) (*ml.StringItem, *styles.Info, error) {
@@ -72,7 +67,7 @@ func toRichText(parts ...interface{}) (*ml.StringItem, *styles.Info, error) {
 				}
 
 				richText = append(richText, &ml.RichText{
-					Font: toRichFont(v),
+					Font: styles.UnpackRichFont(v),
 				})
 
 				fontPart = true
