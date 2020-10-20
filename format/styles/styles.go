@@ -175,7 +175,7 @@ func (f *Info) Unpack() (font *ml.Font, fill *ml.Fill, alignment *ml.CellAlignme
 	return
 }
 
-func UnpackRichFont(f *Info) *ml.RichFont {
+func (f *Info) UnpackRichFont() *ml.RichFont {
 	style := f.styleInfo
 
 	//copy non-empty font

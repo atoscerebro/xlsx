@@ -67,7 +67,7 @@ func toRichText(parts ...interface{}) (*ml.StringItem, *styles.Info, error) {
 				}
 
 				richText = append(richText, &ml.RichText{
-					Font: styles.UnpackRichFont(v),
+					Font: v.UnpackRichFont(),
 				})
 
 				fontPart = true
